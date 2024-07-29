@@ -1,26 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import HomePage from './components/HomePage';
+import Game from './components/Game';
 
-function App() {
+const App: React.FC = () => {
+  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handleStart = (username: string, fullName: string) => {
+    setUsername(username);
+    setFullName(fullName);
+    setIsPlaying(true);
+  };
+
+  const handleEnd = () => {
+    setIsPlaying(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {isPlaying ? (
+        <Game username={username} fullName={fullName} onEnd={handleEnd} />
+      ) : (
+        <HomePage onStart={handleStart} />
+      )}
     </div>
   );
-}
+};
 
 export default App;
