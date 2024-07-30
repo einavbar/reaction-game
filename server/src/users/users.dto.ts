@@ -1,12 +1,5 @@
 import { User } from './users.interfaces';
-import {
-  IsString,
-  IsOptional,
-  IsIn,
-  IsDefined,
-  ValidateNested,
-} from '@nestjs/class-validator';
-import { Type } from '@nestjs/class-transformer';
+import { IsString, IsOptional, IsIn } from '@nestjs/class-validator';
 
 export class UserResponse implements User {
   username: string;
@@ -19,21 +12,14 @@ export class UserResponse implements User {
   phone?: string;
 }
 
-export class Sorting {
-  @IsDefined()
+export class GetUsersRequest {
+  @IsOptional()
   @IsString()
   @IsIn(['score'])
-  orderBy: 'string';
+  sortBy: 'string';
 
-  @IsDefined()
+  @IsOptional()
   @IsString()
   @IsIn(['asc', 'desc'])
-  sortOrder: 'asc' | 'desc';
-}
-
-export class GetUsersRequest {
-  @ValidateNested()
-  @IsOptional()
-  @Type(() => Sorting)
-  sorting?: Sorting;
+  sortDirection: 'asc' | 'desc';
 }

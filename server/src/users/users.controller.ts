@@ -8,11 +8,12 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers(@Query() request: GetUsersRequest): Promise<UserResponse[]> {
-    // todo - add transformation of request to FindOptions
+  async getUsers(
+    @Query() { sortBy, sortDirection }: GetUsersRequest,
+  ): Promise<UserResponse[]> {
     const options: FindOptions = {
-      orderBy: request.sorting?.orderBy,
-      sortOrder: request.sorting?.sortOrder,
+      sortBy: sortBy ?? 'score',
+      sortDirection: sortDirection ?? 'desc',
     };
 
     return this.usersService.getUsers(options);

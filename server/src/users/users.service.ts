@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
-import * as path from 'path';
 import axios from 'axios';
 import { User } from './users.interfaces';
 import { UserResponse } from './users.dto';
@@ -8,8 +7,8 @@ import { UserResponse } from './users.dto';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  private readonly filePath = path.resolve(__dirname, '../users.json');
-  private users: User[] = [];
+  private readonly filePath = '../users.json';
+  private users: User[];
 
   constructor() {
     this.loadUsers();
@@ -17,15 +16,19 @@ export class UsersService {
 
   async updateUser(user: User): Promise<void> {
     const { username } = user;
-    let existingUser = this.users.find((user) => user.username === username);
-
-    if (existingUser) {
-      // make sure user is updated with new data
-      existingUser = {
-        ...existingUser,
+    const existingUserIndex = this.users.findIndex(
+      (u) => u.username === username,
+    );
+    console.log('existingUserIndex', existingUserIndex);
+    if (existingUserIndex !== -1) {
+      // Update existing user
+      this.users[existingUserIndex] = {
+        ...this.users[existingUserIndex],
         ...user,
       };
+      this.saveUsers();
     } else {
+      // If user doesn't exist, create a new one
       await this.createUser(user);
     }
   }
@@ -37,11 +40,15 @@ export class UsersService {
     return user as UserResponse;
   }
 
-  async getUsers({ orderBy, sortOrder }: FindOptions): Promise<UserResponse[]> {
-    if (orderBy === 'score') {
+  async getUsers({
+    sortBy,
+    sortDirection,
+  }: FindOptions): Promise<UserResponse[]> {
+    this.logger.log(`Sorting users by ${sortBy} in ${sortDirection} order`);
+    if (sortBy === 'score') {
       return this.users
         .sort((a, b) =>
-          sortOrder === 'asc' ? a.score - b.score : b.score - a.score,
+          sortDirection === 'asc' ? a.score - b.score : b.score - a.score,
         )
         .map((user) => user as UserResponse);
     }
@@ -49,9 +56,17 @@ export class UsersService {
   }
 
   private loadUsers() {
-    if (fs.existsSync(this.filePath)) {
-      const data = fs.readFileSync(this.filePath, 'utf8');
-      this.users = JSON.parse(data);
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const data = fs.readFileSync(this.filePath, 'utf8');
+        this.users = JSON.parse(data);
+      } else {
+        this.logger.log(`File ${this.filePath} does not exist. Creating file.`);
+        this.users = [];
+        this.saveUsers();
+      }
+    } catch (error) {
+      this.logger.error('Error loading users:', error);
     }
   }
 
@@ -61,13 +76,16 @@ export class UsersService {
 
   private async enrichUserData(user: User): Promise<void> {
     const gender = await this.getGender(user.fullName);
-    user.gender = gender;
-    // todo - only if gender is detrermined add aditional data
     // todo - think of hoe to represent the avatar
-    const additionalData = await this.getAdditionalData(gender);
-    user.avatar = additionalData.avatar;
-    user.country = additionalData.country;
-    user.phone = additionalData.phone;
+    if (gender) {
+      const additionalData = await this.getAdditionalData(gender);
+      user.gender = gender;
+      user.avatar = additionalData.avatar;
+      user.country = additionalData.country;
+      user.phone = additionalData.phone;
+    } else {
+      user.gender = 'undetermined';
+    }
   }
 
   private async getGender(fullname: string): Promise<string> {
@@ -75,13 +93,14 @@ export class UsersService {
       const response = await axios.get(
         `https://api.genderize.io?name=${fullname}`,
       );
+      console.log(response.data.gender, response.data.probability);
       if (response.data.probability > 0.95) {
         return response.data.gender;
       }
     } catch (error) {
       this.logger.error('Error fetching gender:', error);
     }
-    return 'undetermined';
+    return undefined;
   }
 
   private async getAdditionalData(gender: string): Promise<any> {
@@ -103,6 +122,6 @@ export class UsersService {
 }
 
 export interface FindOptions {
-  orderBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
 }

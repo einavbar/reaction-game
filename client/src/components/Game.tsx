@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { GameResult } from '../types';
+import axios from 'axios';
 
 type GameProps = {
   username: string;
@@ -103,19 +104,12 @@ const Game: React.FC<GameProps> = ({
     };
 
     try {
-      const response = await fetch('http://localhost:8080/game', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result),
+      const response = await axios.post('http://localhost:8080/game/result', {
+        username,
+        fullName,
+        score,
       });
-
-      if (response.ok) {
-        console.log('Result sent successfully');
-      } else {
-        console.error('Error sending result:', response.statusText);
-      }
+      console.log('Game result sent:', response.data);
     } catch (error) {
       console.error('Error sending result:', error);
     }
