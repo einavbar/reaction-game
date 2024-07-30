@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { GameResult } from '../../types';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
 
 type GameProps = {
   username: string;
@@ -35,7 +34,7 @@ const Game: React.FC<GameProps> = ({
   username,
   fullName,
   onEnd,
-  gameDuration = 60000,
+  gameDuration = 10000,
   minWaitingTime = 2000,
   maxWaitingTime = 5000,
   shapeSize = 200,  
@@ -44,7 +43,6 @@ const Game: React.FC<GameProps> = ({
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
   const [displayShape, setDisplayShape] = useState(false);
-  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -67,34 +65,27 @@ const Game: React.FC<GameProps> = ({
     };
   }, [shapePosition, score]);
 
-  useEffect(() => {
-    const gameTimer = setTimeout(() => {
-      endGame();
-    }, gameDuration);
-
-    return () => {
-      clearTimeout(gameTimer);
-    };
-  }, [gameDuration]);
-
+  // set random time for waiting state and start the game after that
   useEffect(() => {
     const waitingTime = Math.random() * (maxWaitingTime - minWaitingTime) + minWaitingTime;
     setTimeout(() => {
-        setDisplayShape(true);
+      setDisplayShape(true);
+      setTimeout(() => {
+        endGame();
+      }, gameDuration);
       }, waitingTime);
     }, []);
   
+    // display shape for 1 second and hide it for 1 second
     useEffect(() => {
       if (displayShape) {
       const dispalyShapeTime = 1000;
       const timeWithoutShape = 1000;
-      // u are now displaying a shpae - no msg, trye waiting
       setTimeout(() => {
-      setShapePosition(null)
-      setDisplayShape(false);
-      setMessage('');
-    
-      setTimeout(() => {
+        setShapePosition(null)
+        setDisplayShape(false);
+        setMessage('');
+        setTimeout(() => {
           setDisplayShape(true); 
           setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
 
@@ -111,12 +102,7 @@ const Game: React.FC<GameProps> = ({
   };
 
   const sendResult = async () => {
-    const result: GameResult = {
-      username,
-      fullName,
-      score,
-    };
-
+    console.log('Sending result:', { username, fullName, score });
     try {
       const response = await axios.post('http://localhost:8080/game/result', {
         username,
