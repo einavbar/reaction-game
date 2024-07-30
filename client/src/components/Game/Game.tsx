@@ -43,7 +43,7 @@ const Game: React.FC<GameProps> = ({
   const [shapePosition, setShapePosition] = useState<'left' | 'right' | null>(null);
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [isWaiting, setIsWaiting] = useState(false);
+  const [displayShape, setDisplayShape] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -78,19 +78,32 @@ const Game: React.FC<GameProps> = ({
   }, [gameDuration]);
 
   useEffect(() => {
-    if (!isWaiting) {
-      const waitingTime = Math.random() * (maxWaitingTime - minWaitingTime) + minWaitingTime;
-      setIsWaiting(true);
-      setTimeout(() => {
-        setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
-        setIsWaiting(false);
-        timerRef.current = window.setTimeout(() => {
-          setShapePosition(null);
-          setMessage('Too late');
-        }, 1000);
+    const waitingTime = Math.random() * (maxWaitingTime - minWaitingTime) + minWaitingTime;
+    setTimeout(() => {
+        setDisplayShape(true);
       }, waitingTime);
-    }
-  }, [isWaiting, minWaitingTime, maxWaitingTime]);
+    }, []);
+  
+    useEffect(() => {
+      if (displayShape) {
+      const dispalyShapeTime = 1000;
+      const timeWithoutShape = 1000;
+      // u are now displaying a shpae - no msg, trye waiting
+      setTimeout(() => {
+      setShapePosition(null)
+      setDisplayShape(false);
+      setMessage('');
+    
+      setTimeout(() => {
+          setDisplayShape(true); 
+          setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
+
+      }, timeWithoutShape);
+
+    }, dispalyShapeTime);
+  }
+  }, [ displayShape ]);
+
 
   const endGame = () => {
     sendResult();
