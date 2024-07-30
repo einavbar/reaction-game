@@ -16,7 +16,7 @@ export class GetUsersRequest {
   @IsOptional()
   @IsString()
   @IsIn(['score'])
-  sortBy: 'string';
+  sortBy: string;
 
   @IsOptional()
   @IsString()
