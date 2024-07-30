@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 
 type GameProps = {
-  username: string;
-  fullName: string;
-  onEnd: () => void;
+  onEnd: (score: number) => void;
   gameDuration?: number;
   minWaitingTime?: number;
   maxWaitingTime?: number;
@@ -30,8 +27,6 @@ const Message = styled.div<{ isError: boolean }>`
 `;
 
 const Game: React.FC<GameProps> = ({
-  username,
-  fullName,
   onEnd,
   gameDuration = 10000,
   minWaitingTime = 2000,
@@ -41,7 +36,12 @@ const Game: React.FC<GameProps> = ({
   const [shapePosition, setShapePosition] = useState<'left' | 'right' | null>(null);
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
   const [displayShape, setDisplayShape] = useState(false);
+
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
 
   // set random time for waiting state and start the game after that
   useEffect(() => {
@@ -49,7 +49,7 @@ const Game: React.FC<GameProps> = ({
     setTimeout(() => {
       setDisplayShape(true);
       setTimeout(() => {
-        endGame();
+        onEnd(scoreRef.current);
       }, gameDuration);
     }, waitingTime);
   }, []);
@@ -77,7 +77,7 @@ const Game: React.FC<GameProps> = ({
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        endGame();
+        onEnd(scoreRef.current);
       } else if (!displayShape) {
         setMessage('Too soon');
       } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
@@ -93,28 +93,7 @@ const Game: React.FC<GameProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [shapePosition, score]);
-
-  // todo - extracty this logix to the game page
-  const endGame = () => {
-    sendResult();
-    onEnd();
-  };
-
-    // todo - extracty this logix to the game page
-  const sendResult = async () => {
-    console.log('Sending result:', { username, fullName, score });
-    try {
-      const response = await axios.post('http://localhost:8080/game/result', {
-        username,
-        fullName,
-        score,
-      });
-      console.log('Game result sent:', response.data);
-    } catch (error) {
-      console.error('Error sending result:', error);
-    }
-  };
+  }, [shapePosition, displayShape, scoreRef.current]);
   
   return (
     <div>
