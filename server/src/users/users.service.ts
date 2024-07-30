@@ -8,7 +8,8 @@ import { UserResponse } from './users.dto';
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
   private readonly filePath = '../users.json';
-  private users: User[];
+  private users: User[] = [];
+  private usersMap: Map<string, User> = new Map();
 
   constructor() {
     this.loadUsers();
@@ -16,19 +17,15 @@ export class UsersService {
 
   async updateUser(user: User): Promise<void> {
     const { username } = user;
-    const existingUserIndex = this.users.findIndex(
-      (u) => u.username === username,
-    );
-
-    if (existingUserIndex !== -1) {
+    if (this.usersMap.has(username)) {
       // Update existing user
-      this.users[existingUserIndex] = {
-        ...this.users[existingUserIndex],
-        ...user,
-      };
+      const existingUser = this.usersMap.get(username);
+      const updatedUser = { ...existingUser, ...user };
+      this.usersMap.set(username, updatedUser);
+      this.users = Array.from(this.usersMap.values());
       this.saveUsers();
     } else {
-      // If user doesn't exist, create a new one
+      // If username doesn't exist, create a new user
       await this.createUser(user);
     }
   }
@@ -36,6 +33,7 @@ export class UsersService {
   async createUser(user: User): Promise<UserResponse> {
     await this.enrichUserData(user);
     this.users.push(user);
+    this.usersMap.set(user.username, user);
     this.saveUsers();
     return user as UserResponse;
   }
@@ -44,11 +42,16 @@ export class UsersService {
     sortBy,
     sortDirection,
   }: FindOptions): Promise<UserResponse[]> {
-    this.logger.log(`Sorting users by ${sortBy} in ${sortDirection} order`);
-    if (sortBy === 'score') {
+    if (sortBy) {
       return this.users
         .sort((a, b) =>
-          sortDirection === 'asc' ? a.score - b.score : b.score - a.score,
+          sortDirection === 'asc'
+            ? a[sortBy] > b[sortBy]
+              ? 1
+              : -1
+            : a[sortBy] < b[sortBy]
+              ? 1
+              : -1,
         )
         .map((user) => user as UserResponse);
     }
@@ -59,10 +62,13 @@ export class UsersService {
     try {
       if (fs.existsSync(this.filePath)) {
         const data = fs.readFileSync(this.filePath, 'utf8');
-        this.users = JSON.parse(data);
+        const usersArray: User[] = JSON.parse(data);
+        this.users = usersArray;
+        this.users.forEach((user) => this.usersMap.set(user.username, user));
       } else {
         this.logger.log(`File ${this.filePath} does not exist. Creating file.`);
         this.users = [];
+        this.usersMap.clear();
         this.saveUsers();
       }
     } catch (error) {
@@ -76,15 +82,12 @@ export class UsersService {
 
   private async enrichUserData(user: User): Promise<void> {
     const gender = await this.getGender(user.fullName);
-    // todo - think of hoe to represent the avatar
+    user.gender = gender || 'undetermined';
     if (gender) {
       const additionalData = await this.getAdditionalData(gender);
-      user.gender = gender;
       user.avatar = additionalData.avatar;
       user.country = additionalData.country;
       user.phone = additionalData.phone;
-    } else {
-      user.gender = 'undetermined';
     }
   }
 
@@ -93,7 +96,6 @@ export class UsersService {
       const response = await axios.get(
         `https://api.genderize.io?name=${fullname}`,
       );
-      console.log(response.data.gender, response.data.probability);
       if (response.data.probability > 0.95) {
         return response.data.gender;
       }
