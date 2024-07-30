@@ -19,7 +19,7 @@ export class UsersService {
     const existingUserIndex = this.users.findIndex(
       (u) => u.username === username,
     );
-    console.log('existingUserIndex', existingUserIndex);
+
     if (existingUserIndex !== -1) {
       // Update existing user
       this.users[existingUserIndex] = {
