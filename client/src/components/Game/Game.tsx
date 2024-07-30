@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { GameResult } from '../types';
+import { GameResult } from '../../types';
 import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type GameProps = {
   username: string;
@@ -37,7 +38,7 @@ const Game: React.FC<GameProps> = ({
   gameDuration = 60000,
   minWaitingTime = 2000,
   maxWaitingTime = 5000,
-  shapeSize = 200,
+  shapeSize = 200,  
 }) => {
   const [shapePosition, setShapePosition] = useState<'left' | 'right' | null>(null);
   const [message, setMessage] = useState('');

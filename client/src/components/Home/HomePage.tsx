@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-type HomePageProps = {
-  onStart: (username: string, fullName: string) => void;
-};
-
-const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
+const HomePage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    onStart(username, fullName);
+  const handleStart = () => {
+    navigate('/game', { state: { username, fullName } });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+      <form onSubmit={handleStart}>
       <label>
         Username:
         <input
@@ -33,8 +30,8 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
           required
         />
       </label>
-      <button type="submit">PLAY</button>
-    </form>
+      <button onClick={handleStart}>Play</button>
+    </form> 
   );
 };
 
