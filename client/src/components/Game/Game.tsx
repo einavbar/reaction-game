@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { GameResult } from '../../types';
 import axios from 'axios';
 
 type GameProps = {
@@ -44,27 +43,6 @@ const Game: React.FC<GameProps> = ({
   const [score, setScore] = useState(0);
   const [displayShape, setDisplayShape] = useState(false);
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        endGame();
-      } else if (shapePosition === null) {
-        setMessage('Too soon');
-      } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
-        setMessage('Well done');
-        setScore(score + 1);
-      } else {
-        setMessage('Wrong side');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [shapePosition, score]);
-
   // set random time for waiting state and start the game after that
   useEffect(() => {
     const waitingTime = Math.random() * (maxWaitingTime - minWaitingTime) + minWaitingTime;
@@ -73,12 +51,12 @@ const Game: React.FC<GameProps> = ({
       setTimeout(() => {
         endGame();
       }, gameDuration);
-      }, waitingTime);
-    }, []);
-  
-    // display shape for 1 second and hide it for 1 second
-    useEffect(() => {
-      if (displayShape) {
+    }, waitingTime);
+  }, []);
+
+  // display shape for 1 second and hide it for 1 second
+  useEffect(() => {
+    if (displayShape) {
       const dispalyShapeTime = 1000;
       const timeWithoutShape = 1000;
       setTimeout(() => {
@@ -95,12 +73,35 @@ const Game: React.FC<GameProps> = ({
   }
   }, [ displayShape ]);
 
+  // listen for key press events
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        endGame();
+      } else if (!displayShape) {
+        setMessage('Too soon');
+      } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
+        setMessage('Well done');
+        setScore(score + 1);
+      } else {
+        setMessage('Wrong side');
+      }
+    };
 
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [shapePosition, score]);
+
+  // todo - extracty this logix to the game page
   const endGame = () => {
     sendResult();
     onEnd();
   };
 
+    // todo - extracty this logix to the game page
   const sendResult = async () => {
     console.log('Sending result:', { username, fullName, score });
     try {
@@ -114,14 +115,14 @@ const Game: React.FC<GameProps> = ({
       console.error('Error sending result:', error);
     }
   };
-
+  
   return (
     <div>
       {shapePosition && <Shape position={shapePosition} size={shapeSize} />}
+      <div>Score: {score}</div>
       <Message isError={message === 'Too soon' || message === 'Wrong side' || message === 'Too late'}>
         {message}
       </Message>
-      <div>Score: {score}</div>
     </div>
   );
 };
