@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 export enum RoundStatus {
-    TooSoon,
+    TooSoon=1,
     TooLate,
     WrongSide,
     Hit,

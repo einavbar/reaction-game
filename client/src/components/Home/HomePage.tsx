@@ -30,7 +30,7 @@ const HomePage: React.FC = () => {
           required
         />
       </label>
-      <button onClick={handleStart}>PLAY</button>
+      <button type="submit">PLAY</button>
     </form> 
   );
 };
