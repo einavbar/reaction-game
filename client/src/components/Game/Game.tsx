@@ -14,7 +14,7 @@ type GameProps = {
 
 const Game: React.FC<GameProps> = ({
   onEnd,
-  gameDuration = 10000,
+  gameDuration = 60000,
   roundDuration = 1000,
   shapeSize = 200,  
   minWaitingDuration = 2000,
