@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Feedback, { RoundStatus } from './Feedback';
 import ScoreDisplay from './ScoreDisplay';
 import Shape from './Shape';
@@ -68,7 +68,6 @@ const Game: React.FC<GameProps> = ({
       }, 1000);
   }}, [displayShape, waitingState]);
 
-  // listen for key press events
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
