@@ -21,9 +21,10 @@ const Game: React.FC<GameProps> = ({
   maxWaitingDuration = 5000,
 }) => {
   const [shapePosition, setShapePosition] = useState<'left' | 'right'>();
-  const [roundStatus, setRoundStatus] = useState<RoundStatus | null>();
-  const [score, setScore] = useState(0);
-  const scoreRef = useRef(0);
+  const [roundStatus, setRoundStatus] = useState<RoundStatus | null>(null);
+  const roundStatusRef = useRef<RoundStatus | null>(null); 
+  const [score, setScore] = useState<number>(0);
+  const scoreRef = useRef<number>(0);
   const [displayShape, setDisplayShape] = useState(false);
 
   useEffect(() => {
@@ -32,10 +33,9 @@ const Game: React.FC<GameProps> = ({
 
   // set random time for waiting state and start the game after that
   useEffect(() => {
-    // display instruction
+    // todo display instruction
     const waitingDuration = Math.random() * (maxWaitingDuration - minWaitingDuration) + minWaitingDuration;
     setTimeout(() => {
-      // stop display instructions and start the game
       setDisplayShape(true);
       setTimeout(() => {
         onEnd(scoreRef.current);
@@ -43,24 +43,31 @@ const Game: React.FC<GameProps> = ({
     }, waitingDuration);
   }, []);
 
-  // display shape for roundDuration and hide it for 1 second
+  // set timeout for roundDuration and hide shape
   useEffect(() => {
     if (displayShape) {
       setTimeout(() => {
-        if(roundStatus === null) {
+        console.log('roundStatusRef.current', roundStatusRef.current);
+        if(roundStatusRef.current === null) {
           setRoundStatus(RoundStatus.TooLate);
-        }
+          roundStatusRef.current = RoundStatus.TooLate;
+        }          
         setDisplayShape(false);
+      }, roundDuration);
+  }
+}, [displayShape]);
+
+  // set timeout for 1 second and display shape
+  useEffect(() => {
+    if (!displayShape) {
         setTimeout(() => {
           setRoundStatus(null);
+          roundStatusRef.current = null;
           setDisplayShape(true); 
           setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
 
       }, 1000);
-
-    }, roundDuration);
-  }
-  }, [displayShape]);
+  }}, [displayShape]);
 
   // listen for key press events
   useEffect(() => {
@@ -69,11 +76,14 @@ const Game: React.FC<GameProps> = ({
         onEnd(scoreRef.current);
       } else if (!displayShape) {
         setRoundStatus(RoundStatus.TooSoon);
+        roundStatusRef.current = roundStatus;
       } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
         setRoundStatus(RoundStatus.Hit);
+        roundStatusRef.current = RoundStatus.Hit;
         setScore(score + 1);
       } else {
         setRoundStatus(RoundStatus.WrongSide);
+        roundStatusRef.current = roundStatus;
       }
     };
 
@@ -82,7 +92,7 @@ const Game: React.FC<GameProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [shapePosition, displayShape, score, onEnd]);
+  }, [shapePosition, score, onEnd]);
   
   return (
     <div>
