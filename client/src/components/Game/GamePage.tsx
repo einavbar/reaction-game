@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Game from './Game';
-import axios from 'axios';
+import { sendGameResult } from '../../services/api';
 
 const GamePage: React.FC<{}> = () => {
   const location = useLocation();
@@ -16,9 +16,8 @@ const GamePage: React.FC<{}> = () => {
 
   const handleGameEnd = async (score: number) => {
     navigate('/');
-    console.log('Sending result:', { username, fullName, score });
     try {
-      const response = await axios.post('http://localhost:8080/game/result', {
+      const response = await sendGameResult({
         username,
         fullName,
         score,

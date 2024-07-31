@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 export enum RoundStatus {
-    None,
     TooSoon,
     TooLate,
     WrongSide,
@@ -13,35 +12,34 @@ type MessageProps = {
   status: RoundStatus;
 };
 
-const Message = styled.div<{ isSuccess: boolean }>`
-  color: ${({ isSuccess }) => (isSuccess ? 'green' : 'red')};
+const MessageContainer = styled.div<{ isSuccess: boolean }>`
   font-size: 24px;
-  margin-top: 20px;
+  color: #fff;
+  background-color: ${({ isSuccess }) => (isSuccess ? 'green' : 'red')};;
+  padding: 10px 20px;
+  border-radius: 10px;
+  display: inline-block;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
-
 const Feedback: React.FC<MessageProps> = ({ status }) => {
-  let message = '';
+ const message = useMemo(()=> {
+    switch (status) {
+      case RoundStatus.TooSoon:
+        return 'Too soon!';
+      case RoundStatus.TooLate:
+        return 'Too late!';
+      case RoundStatus.WrongSide:
+        return 'Wrong side!';
+      case RoundStatus.Hit:
+        return 'Well done!';
+      default:
+        return '';
+    }
+  },[status]);
+  const isSuccess = useMemo(() => status === RoundStatus.Hit, [status]);
 
-  switch (status) {
-    case RoundStatus.TooSoon:
-      message = 'Too soon!';
-      break;
-    case RoundStatus.TooLate:
-      message = 'Too late!';
-      break;
-    case RoundStatus.WrongSide:
-      message = 'Wrong side!';
-      break;
-    case RoundStatus.Hit:
-      message = 'Well done!';
-      break;
-    default:
-      message = '';
-  }
-
-  return <Message isSuccess={status === RoundStatus.Hit
-  }>{message}</Message>;
+  return <MessageContainer isSuccess={isSuccess}>{message}</MessageContainer>;
 };
 
 export default Feedback;
