@@ -26,6 +26,8 @@ const Game: React.FC<GameProps> = ({
   const roundStatusRef = useRef<RoundStatus | null>(null); 
   const [score, setScore] = useState<number>(0);
   const scoreRef = useRef<number>(0);
+  const [gameOn, setGameOn] = useState<boolean>(false);
+  const gameOnRef = useRef<boolean>(false);
   const [displayShape, setDisplayShape] = useState<boolean>(false);
 
   useEffect(() => {
@@ -38,8 +40,10 @@ const Game: React.FC<GameProps> = ({
   }, []);
 
   const startGame = () => {
+    setGameOn(true);
     setTimeout(() => {
-      onEnd(scoreRef.current);
+      if(gameOnRef.current) {
+      onEnd(scoreRef.current);}
     }, gameDuration); 
     setDisplayShape(true);
     setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
@@ -71,6 +75,7 @@ const Game: React.FC<GameProps> = ({
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        setGameOn(false);
         onEnd(scoreRef.current);
       } else if (waitingState) {
         setRoundStatus(RoundStatus.TooSoon);
@@ -96,6 +101,10 @@ const Game: React.FC<GameProps> = ({
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
+
+  useEffect(() => {
+    gameOnRef.current = gameOn;
+  }, [gameOn]);
   
   return (
     <div>

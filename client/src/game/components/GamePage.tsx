@@ -17,12 +17,11 @@ const GamePage: React.FC<{}> = () => {
   const handleGameEnd = async (score: number) => {
     navigate('/');
     try {
-      const response = await sendGameResult({
+      await sendGameResult({
         username,
         fullName,
         score,
       });
-      console.log('Game result sent:', response.data);
     } catch (error) {
       console.error('Error sending result:', error);
     }
