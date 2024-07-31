@@ -1,15 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export enum Status {
+export enum RoundStatus {
+    None,
     TooSoon,
     TooLate,
     WrongSide,
-    Success,
+    Hit,
  }
 
 type MessageProps = {
-  status: Status;
+  status: RoundStatus;
 };
 
 const Message = styled.div<{ isSuccess: boolean }>`
@@ -23,23 +24,23 @@ const Feedback: React.FC<MessageProps> = ({ status }) => {
   let message = '';
 
   switch (status) {
-    case Status.TooSoon:
-      message = 'You pressed too soon!';
+    case RoundStatus.TooSoon:
+      message = 'Too soon!';
       break;
-    case Status.TooLate:
-      message = 'You pressed too late!';
+    case RoundStatus.TooLate:
+      message = 'Too late!';
       break;
-    case Status.WrongSide:
-      message = 'You pressed the wrong side!';
+    case RoundStatus.WrongSide:
+      message = 'Wrong side!';
       break;
-    case Status.Success:
-      message = 'Success! You pressed correctly!';
+    case RoundStatus.Hit:
+      message = 'Well done!';
       break;
     default:
       message = '';
   }
 
-  return <Message isSuccess={status === Status.Success
+  return <Message isSuccess={status === RoundStatus.Hit
   }>{message}</Message>;
 };
 

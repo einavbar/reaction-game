@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import Feedback, { RoundStatus } from './Feedback';
 
 type GameProps = {
   onEnd: (score: number) => void;
@@ -20,12 +21,6 @@ const Shape = styled.div<{ position: 'left' | 'right'; size: number }>`
   transform: translateY(-50%);
 `;
 
-const Message = styled.div<{ isError: boolean }>`
-  color: ${({ isError }) => (isError ? 'red' : 'green')};
-  font-size: 24px;
-  margin-top: 20px;
-`;
-
 const Game: React.FC<GameProps> = ({
   onEnd,
   gameDuration = 10000,
@@ -34,7 +29,7 @@ const Game: React.FC<GameProps> = ({
   shapeSize = 200,  
 }) => {
   const [shapePosition, setShapePosition] = useState<'left' | 'right' | null>(null);
-  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<RoundStatus>(RoundStatus.None);
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
   const [displayShape, setDisplayShape] = useState(false);
@@ -62,7 +57,7 @@ const Game: React.FC<GameProps> = ({
       setTimeout(() => {
         setShapePosition(null)
         setDisplayShape(false);
-        setMessage('');
+        setStatus(RoundStatus.None);
         setTimeout(() => {
           setDisplayShape(true); 
           setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
@@ -79,12 +74,12 @@ const Game: React.FC<GameProps> = ({
       if (event.key === 'Escape') {
         onEnd(scoreRef.current);
       } else if (!displayShape) {
-        setMessage('Too soon');
+        setStatus(RoundStatus.TooSoon);
       } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
-        setMessage('Well done');
+        setStatus(RoundStatus.Hit);
         setScore(score + 1);
       } else {
-        setMessage('Wrong side');
+        setStatus(RoundStatus.WrongSide);
       }
     };
 
@@ -93,15 +88,13 @@ const Game: React.FC<GameProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [shapePosition, displayShape, scoreRef.current]);
+  }, [shapePosition, displayShape, scoreRef.current, score]);
   
   return (
     <div>
       {shapePosition && <Shape position={shapePosition} size={shapeSize} />}
       <div>Score: {score}</div>
-      <Message isError={message === 'Too soon' || message === 'Wrong side' || message === 'Too late'}>
-        {message}
-      </Message>
+      <Feedback status={status} />
     </div>
   );
 };
