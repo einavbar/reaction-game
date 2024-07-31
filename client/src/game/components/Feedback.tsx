@@ -8,7 +8,7 @@ export enum RoundStatus {
     Hit,
  }
 
-type MessageProps = {
+type FeedbackProps = {
   status: RoundStatus;
 };
 
@@ -22,7 +22,7 @@ const MessageContainer = styled.div<{ isSuccess: boolean }>`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
-const Feedback: React.FC<MessageProps> = ({ status }) => {
+const Feedback: React.FC<FeedbackProps> = ({ status }) => {
  const message = useMemo(()=> {
     switch (status) {
       case RoundStatus.TooSoon:

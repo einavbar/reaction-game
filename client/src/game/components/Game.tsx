@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Feedback, { RoundStatus } from './Feedback';
-import ScoreDisplay from './ScoreDisplay';
+import Score from './Score';
 import Shape from './Shape';
 
 type GameProps = {
@@ -20,13 +20,13 @@ const Game: React.FC<GameProps> = ({
   minWaitingDuration = 2000,
   maxWaitingDuration = 5000,
 }) => {
-  const [waitingState, setWaitingState] = useState(true);
+  const [waitingState, setWaitingState] = useState<boolean>(true);
   const [shapePosition, setShapePosition] = useState<'left' | 'right'>();
   const [roundStatus, setRoundStatus] = useState<RoundStatus | null>(null);
   const roundStatusRef = useRef<RoundStatus | null>(null); 
   const [score, setScore] = useState<number>(0);
   const scoreRef = useRef<number>(0);
-  const [displayShape, setDisplayShape] = useState(false);
+  const [displayShape, setDisplayShape] = useState<boolean>(false);
 
   useEffect(() => {
     // todo display instruction
@@ -100,7 +100,7 @@ const Game: React.FC<GameProps> = ({
   return (
     <div>
       {displayShape && <Shape position={shapePosition} size={shapeSize} />}
-      <ScoreDisplay score={score}/>
+      <Score score={score}/>
       {roundStatus && (<Feedback status={roundStatus} />)}
     </div>
   );

@@ -28,8 +28,7 @@ const GamePage: React.FC<{}> = () => {
     }
   };
 
-
   return <Game onEnd={handleGameEnd} />;
- 
-}
+};
+
 export default GamePage;

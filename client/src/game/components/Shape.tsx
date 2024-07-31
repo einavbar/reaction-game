@@ -1,5 +1,9 @@
-import React from 'react';
 import styled from 'styled-components';
+
+type ShapeProps = {
+  position: 'left' | 'right' | undefined;
+  size: number 
+};
 
 const ShapeContainer = styled.div<{ position: 'left' | 'right'| undefined; size: number }>`
 position: absolute;
@@ -12,7 +16,7 @@ border-radius: 50%;
 transform: translateY(-50%);
 `;
 
-const Shape = ( { position, size}: { position: 'left' | 'right' | undefined ; size: number }) => {
+const Shape = ( { position, size }: ShapeProps) => {
   return <ShapeContainer position={position} size={size}/>;
 };
 

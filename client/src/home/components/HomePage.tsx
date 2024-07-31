@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState<string>('');
+  const [fullName, setFullName] = useState<string>('');
   const navigate = useNavigate();
 
   const handleStart = () => {
