@@ -18,12 +18,24 @@ Make sure you have the following installed on your machine:
 1. Navigate to the `server` folder:
    ```bash
    cd server
-   npm install
+2. Install the necessary dependencies:
+   ```bash
+      npm install
+
+3. Start the server:
+   ```bash
    npm start
 
-3. Navigate to the `client` folder:
+### Setting Up the Client
+
+1. Navigate to the `client` folder:
    ```bash
-   cd ..
    cd client
-   npm install
+2. Install the necessary dependencies:
+   ```bash
+      npm install
+
+3. Start the client:
+   ```bash
    npm start
+   
