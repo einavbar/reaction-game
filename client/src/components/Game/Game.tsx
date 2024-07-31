@@ -1,35 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import Feedback, { RoundStatus } from './Feedback';
+import ScoreDisplay from './ScoreDisplay';
+import Shape from './Shape';
 
 type GameProps = {
   onEnd: (score: number) => void;
   gameDuration?: number;
-  minWaitingTime?: number;
-  maxWaitingTime?: number;
+  roundDuration?: number;
   shapeSize?: number;
+  minWaitingDuration?: number;
+  maxWaitingDuration?: number;
 };
-
-const Shape = styled.div<{ position: 'left' | 'right'; size: number }>`
-  position: absolute;
-  ${({ position }) => position}: 10%;
-  top: 50%;
-  width: ${({ size }) => size}px;
-  height: ${({ size }) => size}px;
-  background-color: black;
-  border-radius: 50%;
-  transform: translateY(-50%);
-`;
 
 const Game: React.FC<GameProps> = ({
   onEnd,
-  gameDuration = 10000,
-  minWaitingTime = 2000,
-  maxWaitingTime = 5000,
+  gameDuration = 60000,
+  roundDuration = 1000,
   shapeSize = 200,  
+  minWaitingDuration = 2000,
+  maxWaitingDuration = 5000,
 }) => {
-  const [shapePosition, setShapePosition] = useState<'left' | 'right' | null>(null);
-  const [status, setStatus] = useState<RoundStatus>(RoundStatus.None);
+  const [shapePosition, setShapePosition] = useState<'left' | 'right'>();
+  const [roundStatus, setRoundStatus] = useState<RoundStatus | null>();
   const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
   const [displayShape, setDisplayShape] = useState(false);
@@ -40,33 +32,35 @@ const Game: React.FC<GameProps> = ({
 
   // set random time for waiting state and start the game after that
   useEffect(() => {
-    const waitingTime = Math.random() * (maxWaitingTime - minWaitingTime) + minWaitingTime;
+    // display instruction
+    const waitingDuration = Math.random() * (maxWaitingDuration - minWaitingDuration) + minWaitingDuration;
     setTimeout(() => {
+      // stop display instructions and start the game
       setDisplayShape(true);
       setTimeout(() => {
         onEnd(scoreRef.current);
-      }, gameDuration);
-    }, waitingTime);
+      }, gameDuration); 
+    }, waitingDuration);
   }, []);
 
-  // display shape for 1 second and hide it for 1 second
+  // display shape for roundDuration and hide it for 1 second
   useEffect(() => {
     if (displayShape) {
-      const dispalyShapeTime = 1000;
-      const timeWithoutShape = 1000;
       setTimeout(() => {
-        setShapePosition(null)
+        if(roundStatus === null) {
+          setRoundStatus(RoundStatus.TooLate);
+        }
         setDisplayShape(false);
-        setStatus(RoundStatus.None);
         setTimeout(() => {
+          setRoundStatus(null);
           setDisplayShape(true); 
           setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
 
-      }, timeWithoutShape);
+      }, 1000);
 
-    }, dispalyShapeTime);
+    }, roundDuration);
   }
-  }, [ displayShape ]);
+  }, [displayShape]);
 
   // listen for key press events
   useEffect(() => {
@@ -74,12 +68,12 @@ const Game: React.FC<GameProps> = ({
       if (event.key === 'Escape') {
         onEnd(scoreRef.current);
       } else if (!displayShape) {
-        setStatus(RoundStatus.TooSoon);
+        setRoundStatus(RoundStatus.TooSoon);
       } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
-        setStatus(RoundStatus.Hit);
+        setRoundStatus(RoundStatus.Hit);
         setScore(score + 1);
       } else {
-        setStatus(RoundStatus.WrongSide);
+        setRoundStatus(RoundStatus.WrongSide);
       }
     };
 
@@ -88,13 +82,13 @@ const Game: React.FC<GameProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [shapePosition, displayShape, scoreRef.current, score]);
+  }, [shapePosition, displayShape, score, onEnd]);
   
   return (
     <div>
-      {shapePosition && <Shape position={shapePosition} size={shapeSize} />}
-      <div>Score: {score}</div>
-      <Feedback status={status} />
+      {displayShape && <Shape position={shapePosition} size={shapeSize} />}
+      <ScoreDisplay score={score}/>
+      {roundStatus && (<Feedback status={roundStatus} />)}
     </div>
   );
 };
