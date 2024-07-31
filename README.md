@@ -20,7 +20,7 @@ Make sure you have the following installed on your machine:
    cd server
 2. Install the necessary dependencies:
    ```bash
-      npm install
+   npm install
 
 3. Start the server:
    ```bash
@@ -33,7 +33,7 @@ Make sure you have the following installed on your machine:
    cd client
 2. Install the necessary dependencies:
    ```bash
-    npm install
+   npm install
 
 3. Start the client:
    ```bash

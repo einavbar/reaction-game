@@ -31,7 +31,6 @@ const Game: React.FC<GameProps> = ({
   const [displayShape, setDisplayShape] = useState<boolean>(false);
 
   useEffect(() => {
-    // todo display instruction
     const waitingDuration = Math.random() * (maxWaitingDuration - minWaitingDuration) + minWaitingDuration;
     setTimeout(() => {
       setWaitingState(false);
