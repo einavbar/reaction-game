@@ -5,9 +5,8 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { FindOptions, UsersService } from './users.service';
 import { UserResponse, GetUsersRequest } from './users.dto';
-import { FindOptions } from './users.service';
 
 @UsePipes(new ValidationPipe())
 @Controller('users')
@@ -16,11 +15,14 @@ export class UsersController {
 
   @Get()
   async getUsers(
-    @Query() { sortBy, sortDirection }: GetUsersRequest,
+    @Query() { sorting }: GetUsersRequest,
   ): Promise<UserResponse[]> {
+    console.log('sorting', sorting);
     const options: FindOptions = {
-      sortBy: sortBy ?? 'score',
-      sortDirection: sortDirection ?? 'desc',
+      sorting: sorting ?? {
+        sortBy: 'score',
+        sortDirection: 'desc',
+      },
     };
 
     return this.usersService.getUsers(options);

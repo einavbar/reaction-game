@@ -1,25 +1,35 @@
 import { User } from './users.interfaces';
-import { IsString, IsOptional, IsIn } from '@nestjs/class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsIn,
+  ValidateNested,
+} from '@nestjs/class-validator';
+import { Type } from 'class-transformer';
 
 export class UserResponse implements User {
   username: string;
   fullName: string;
   score: number;
   gender?: string;
-  //todo think about avatar
   avatar?: string;
   country?: string;
   phone?: string;
 }
 
-export class GetUsersRequest {
-  @IsOptional()
+export class Sorting {
   @IsString()
   @IsIn(['score'])
   sortBy: string;
 
-  @IsOptional()
   @IsString()
   @IsIn(['asc', 'desc'])
   sortDirection: 'asc' | 'desc';
+}
+
+export class GetUsersRequest {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => Sorting)
+  sorting: Sorting;
 }

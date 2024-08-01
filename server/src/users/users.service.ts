@@ -38,11 +38,9 @@ export class UsersService {
     return user as UserResponse;
   }
 
-  async getUsers({
-    sortBy,
-    sortDirection,
-  }: FindOptions): Promise<UserResponse[]> {
-    if (sortBy) {
+  async getUsers(findOptions?: FindOptions): Promise<UserResponse[]> {
+    if (findOptions?.sorting) {
+      const { sortBy, sortDirection } = findOptions.sorting;
       return this.users
         .sort((a, b) =>
           sortDirection === 'asc'
@@ -62,14 +60,10 @@ export class UsersService {
     try {
       if (fs.existsSync(this.filePath)) {
         const data = fs.readFileSync(this.filePath, 'utf8');
-        const usersArray: User[] = JSON.parse(data);
-        this.users = usersArray;
+        this.users = JSON.parse(data);
         this.users.forEach((user) => this.usersMap.set(user.username, user));
       } else {
-        this.logger.log(`File ${this.filePath} does not exist. Creating file.`);
-        this.users = [];
-        this.usersMap.clear();
-        this.saveUsers();
+        this.logger.log(`File ${this.filePath} does not exist`);
       }
     } catch (error) {
       this.logger.error('Error loading users:', error);
@@ -85,9 +79,10 @@ export class UsersService {
     user.gender = gender || 'undetermined';
     if (gender) {
       const additionalData = await this.getAdditionalData(gender);
-      user.avatar = additionalData.avatar;
-      user.country = additionalData.country;
-      user.phone = additionalData.phone;
+      user = {
+        ...user,
+        ...additionalData,
+      };
     }
   }
 
@@ -124,6 +119,10 @@ export class UsersService {
 }
 
 export interface FindOptions {
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
+  sorting?: Sorting;
+}
+
+export interface Sorting {
+  sortBy: string;
+  sortDirection: 'asc' | 'desc';
 }
