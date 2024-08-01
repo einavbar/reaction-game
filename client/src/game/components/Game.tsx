@@ -14,32 +14,31 @@ type GameProps = {
 
 const Game: React.FC<GameProps> = ({
   onEnd,
-  gameDuration = 60000,
+  gameDuration = 10000,
   roundDuration = 1000,
   shapeSize = 200,  
   minWaitingDuration = 2000,
   maxWaitingDuration = 5000,
 }) => {
-  const [waitingState, setWaitingState] = useState<boolean>(true);
+  const waitingStateRef = useRef<boolean>(true);
   const [shapePosition, setShapePosition] = useState<'left' | 'right'>();
   const [roundStatus, setRoundStatus] = useState<RoundStatus | null>(null);
   const roundStatusRef = useRef<RoundStatus | null>(null); 
   const [score, setScore] = useState<number>(0);
   const scoreRef = useRef<number>(0);
-  const [gameOn, setGameOn] = useState<boolean>(false);
   const gameOnRef = useRef<boolean>(false);
   const [displayShape, setDisplayShape] = useState<boolean>(false);
 
   useEffect(() => {
     const waitingDuration = Math.random() * (maxWaitingDuration - minWaitingDuration) + minWaitingDuration;
     setTimeout(() => {
-      setWaitingState(false);
+      waitingStateRef.current = false;
       startGame();
     }, waitingDuration);
   }, []);
 
   const startGame = () => {
-    setGameOn(true);
+    gameOnRef.current = true;
     setTimeout(() => {
       if(gameOnRef.current) {
       onEnd(scoreRef.current);}
@@ -62,21 +61,21 @@ const Game: React.FC<GameProps> = ({
 
   // set timeout for 1 second and display shape
   useEffect(() => {
-    if (!waitingState && !displayShape) {
+    if (!waitingStateRef.current && !displayShape) {
         setTimeout(() => {
           setRoundStatus(null);
           setDisplayShape(true); 
           setShapePosition(Math.random() < 0.5 ? 'left' : 'right');
 
       }, 1000);
-  }}, [displayShape, waitingState]);
+  }}, [displayShape]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setGameOn(false);
+        gameOnRef.current = false;
         onEnd(scoreRef.current);
-      } else if (waitingState) {
+      } else if (waitingStateRef.current) {
         setRoundStatus(RoundStatus.TooSoon);
       } else if ((event.key === 'f' && shapePosition === 'left') || (event.key === 'j' && shapePosition === 'right')) {
         setRoundStatus(RoundStatus.Hit);
@@ -100,10 +99,6 @@ const Game: React.FC<GameProps> = ({
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
-
-  useEffect(() => {
-    gameOnRef.current = gameOn;
-  }, [gameOn]);
   
   return (
     <div>
