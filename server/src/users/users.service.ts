@@ -118,11 +118,11 @@ export class UsersService {
   }
 }
 
-export class FindOptions {
+export interface FindOptions {
   sorting?: Sorting;
 }
 
-export class Sorting {
+export interface Sorting {
   sortBy: string;
   sortDirection: 'asc' | 'desc';
 }
